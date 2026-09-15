@@ -6,9 +6,26 @@
     <meta name="theme-color" content="#0f172a" />
     <meta name="description" content="WorkSphere employee management and payroll system" />
     <title>WorkSphere HR</title>
+    <style>
+      .boot-screen{min-height:100vh;display:grid;place-items:center;background:#f8fafc;font-family:Inter,system-ui,sans-serif;color:#0f172a;padding:24px}.boot-card{width:min(560px,100%);background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:28px;box-shadow:0 20px 50px rgba(15,23,42,.07)}.boot-title{font-size:24px;font-weight:800;margin:0 0 8px}.boot-text{color:#64748b;line-height:1.6;margin:0}.boot-dot{width:11px;height:11px;border-radius:50%;background:#2563eb;display:inline-block;margin-right:8px;animation:pulse 1s infinite alternate}@keyframes pulse{to{opacity:.25}}
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="boot-screen"><div class="boot-card"><p class="boot-title"><span class="boot-dot"></span>Starting WorkSphere…</p><p class="boot-text">If this message stays here, the React development server or dependencies did not start correctly.</p></div></div>
+    </div>
+    <script>
+      window.__WORKSPHERE_STARTED__ = false;
+      const showBootError = (message) => {
+        if (window.__WORKSPHERE_STARTED__) return;
+        const root = document.getElementById('root');
+        if (!root) return;
+        root.innerHTML = '<div class="boot-screen"><div class="boot-card"><p class="boot-title">WorkSphere did not start</p><p class="boot-text">'+String(message).replace(/[<>&]/g,'')+'</p><p class="boot-text" style="margin-top:12px"><b>Windows:</b> close this browser tab, then double-click <b>START_WINDOWS.bat</b> inside the project folder.</p></div></div>';
+      };
+      window.addEventListener('error', e => showBootError(e.message || 'A browser startup error occurred.'));
+      window.addEventListener('unhandledrejection', e => showBootError(e.reason?.message || e.reason || 'A startup promise failed.'));
+      setTimeout(() => showBootError('React has not started. Make sure Vite is running; do not open index.html directly.'), 7000);
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
