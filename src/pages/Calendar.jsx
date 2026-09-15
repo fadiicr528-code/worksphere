@@ -1,0 +1,17 @@
+import React, { useMemo, useState } from 'react';
+import { CalendarDays, Plus } from 'lucide-react';
+import { useApp } from '../context/AppContext';
+import { dateLabel } from '../utils/helpers';
+import Modal from '../components/Modal';
+import { PageHeader, Status } from '../components/UI';
+
+export default function CalendarPage(){
+  const {events,setEvents,leaves}=useApp(); const [open,setOpen]=useState(false); const [form,setForm]=useState({title:'',date:'2026-09-20',time:'10:00 AM',type:'Meeting',audience:'All Employees'});
+  const combined=useMemo(()=>[...events.map(x=>({...x,source:'event'})),...leaves.filter(l=>l.status==='Approved').map(l=>({id:`LE-${l.id}`,title:`${l.employee} · ${l.type}`,date:l.from,time:`${l.days} day${l.days>1?'s':''}`,type:'Leave',audience:l.employee,source:'leave'}))].sort((a,b)=>a.date.localeCompare(b.date)),[events,leaves]);
+  const submit=()=>{if(!form.title.trim())return;setEvents(x=>[...x,{...form,id:`EV-${Date.now()}`}]);setOpen(false)};
+  return <>
+    <PageHeader title="Calendar & Events" subtitle="Company events, deadlines, holidays and approved leave in one place." actions={<button className="button primary" onClick={()=>setOpen(true)}><Plus size={16}/>Add Event</button>}/>
+    <div className="calendar-layout"><section className="panel mini-calendar"><div className="calendar-title"><button>‹</button><strong>September 2026</strong><button>›</button></div><div className="calendar-grid weekdays">{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(x=><span key={x}>{x}</span>)}</div><div className="calendar-grid days">{Array.from({length:2},(_,i)=><span className="muted-day" key={`m${i}`}>{30+i}</span>)}{Array.from({length:30},(_,i)=><span key={i+1} className={i+1===14?'today':combined.some(e=>Number(e.date.slice(-2))===i+1&&e.date.startsWith('2026-09'))?'has-event':''}>{i+1}</span>)}</div></section><section className="panel"><div className="panel-head"><div><h3>Upcoming Schedule</h3><p>{combined.length} items</p></div></div><div className="timeline">{combined.map(item=><div className="timeline-row" key={item.id}><div className="timeline-date"><strong>{new Date(item.date+'T00:00:00').getDate()}</strong><span>{new Date(item.date+'T00:00:00').toLocaleDateString('en',{month:'short'})}</span></div><div className="grow"><strong>{item.title}</strong><span>{item.time} · {item.audience}</span></div><Status value={item.type}/></div>)}</div></section></div>
+    <Modal open={open} onClose={()=>setOpen(false)} title="Add Calendar Event" footer={<><button className="button secondary" onClick={()=>setOpen(false)}>Cancel</button><button className="button primary" onClick={submit}>Add Event</button></>}><div className="form-grid"><label className="field full"><span>Event title</span><input value={form.title} onChange={e=>setForm({...form,title:e.target.value})}/></label><label className="field"><span>Date</span><input type="date" value={form.date} onChange={e=>setForm({...form,date:e.target.value})}/></label><label className="field"><span>Time</span><input value={form.time} onChange={e=>setForm({...form,time:e.target.value})}/></label><label className="field"><span>Type</span><select value={form.type} onChange={e=>setForm({...form,type:e.target.value})}><option>Meeting</option><option>Deadline</option><option>Holiday</option><option>Payroll</option><option>Training</option></select></label><label className="field"><span>Audience</span><input value={form.audience} onChange={e=>setForm({...form,audience:e.target.value})}/></label></div></Modal>
+  </>;
+}
